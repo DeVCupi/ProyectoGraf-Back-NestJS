@@ -80,9 +80,17 @@ export class ScraperService {
       return items;
     });
 
+    let globalIndex = 0;
+
     for (const e of menu) {
       if (e.products && e.products.length > 0) {
         console.log(`Procesando categoría: ${e.category} con ${e.products.length} productos`);
+        for (const p of e.products) {
+          p.color = globalIndex % 2 === 0
+            ? "rgba(198, 199, 229, 0.5)"
+            : "rgba(250, 219, 208, 0.5)";
+          globalIndex++;
+        }
         for (const p of e.products) {
 
           if(p.name == "Vinilo Microperforado"){
@@ -95,6 +103,12 @@ export class ScraperService {
             waitUntil: 'networkidle0', 
             timeout: 50000 
           });
+          
+          try {
+            await page.waitForSelector('.woocommerce-product-gallery__image', { timeout: 10000 });
+          } catch (selectorError) {
+            console.warn(`Selector .woocommerce-product-gallery__image no encontrado para ${p.name} - ${p.link}`);
+          }
 
           try {
             await page.waitForSelector('.sticky', { timeout: 10000 });
@@ -108,17 +122,18 @@ export class ScraperService {
             // VALIDACIÓN CRÍTICA: Verificar que sticky existe
             if (!sticky) {
               console.log('Elemento .sticky no encontrado');
-              return { details: '', price: '' };
+              return { 
+                details: '', 
+                price: '',
+                discount_percentage: null,
+                image: '',
+              };
             }
+
+            const img = document.querySelector('div.woocommerce-product-gallery__image > a');
             
             const detailsDiv = sticky.querySelector('div.woocommerce-product-details__short-description');
-            
-            // VALIDACIÓN: Verificar que detailsDiv existe
-            if (!detailsDiv) {
-              console.log('Div de detalles no encontrado');
-              return { details: '', price: '' };
-            }
-            
+                        
             // const detailText = Array.from(detailsDiv.querySelectorAll('p')).map(p => p.textContent?.trim() || '');
             // const detailsList = Array.from(detailsDiv.querySelectorAll('ul > li')).map(li => li.textContent?.trim() || '');
           
@@ -155,34 +170,20 @@ export class ScraperService {
               console.log(oldPriceValue +" "+ newPriceValue)
               discountPercentage = ((oldPriceValue - newPriceValue) / newPriceValue) * 100;
             }
-
-            if (!priceContainer) {
-              console.log('Contenedor de precio no encontrado');
-              return { details: detailsDiv.innerHTML.trim(), price: '' };
-            }
-            
-            const currencyElement = priceContainer.querySelector('span.woocommerce-Price-currencySymbol');
-            
-            if (!currencyElement) {
-              console.log('Símbolo de moneda no encontrado');
-              return { details: detailsDiv.innerHTML.trim(), price: priceContainer.textContent?.trim() || '' };
-            }
-            
-            const signo = currencyElement.textContent?.trim() || '';
-            const price = priceContainer.textContent?.trim() || '';
             
             return { 
-              details: detailsDiv.innerHTML.trim(), 
-              price: signo + price.replace(signo, ''),
-              discount_percentage: discountPercentage > 0 ? `${discountPercentage.toFixed(4)}%` : null
+              details: detailsDiv ? detailsDiv.innerHTML.trim() : '', 
+              price: priceContainer ? '$' + priceContainer.textContent.trim().replace('$', '') : '',
+              discount_percentage: discountPercentage > 0 ? `${discountPercentage.toFixed(4)}%` : null,
+              image: img?.getAttribute('href') ?? '',
             };
           });
     
           p.details = detailProductsAndPrice.details;
           p.price = detailProductsAndPrice.price;
           p.discount_percentage = detailProductsAndPrice.discount_percentage
-          console.log(p)
-          await page.goBack(); // si necesitas volver al listado
+          p.image = detailProductsAndPrice.image
+          await page.goBack();
         }
       }
     }

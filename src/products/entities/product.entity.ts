@@ -22,6 +22,12 @@ export class Product {
   @Column({ length: 255, nullable: true})
   discount_percentage: string
 
+  @Column({ length: 255, nullable: false})
+  image: string
+
+  @Column({ length: 255, nullable: false})
+  color: string
+
   @ManyToOne(() => Category, (cat) => cat.id, {eager: true, nullable: false})
   @JoinColumn({ name: 'category_id' })
   category: Category;

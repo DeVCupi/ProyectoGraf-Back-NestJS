@@ -123,8 +123,8 @@ export class ProductsService {
     return products
   }
 
-  async findNewProducts(): Promise<Product[]> {
-    const products = await this.productRepository.find({ order: { created_at: 'DESC' }, take: 12 });
+  async findNewProducts(limit: number = 12): Promise<Product[]> {
+    const products = await this.productRepository.find({ order: { created_at: 'DESC' }, take: limit });
     if (!products) {
       throw new NotFoundException({
         success: false,

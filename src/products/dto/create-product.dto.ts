@@ -16,4 +16,9 @@ export class CreateProductDto {
   @IsOptional()
   discount_percentage: string;
 
+  @IsString()
+  image: string;
+
+  @IsString()
+  color: string;
 }

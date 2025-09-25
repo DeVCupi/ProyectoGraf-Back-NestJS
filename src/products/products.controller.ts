@@ -26,8 +26,8 @@ export class ProductsController {
   }
 
   @Get("/new")
-  findNewProducts() {
-    return this.productsService.findNewProducts();
+  findNewProducts(@Query('limit') limit?: number) {
+    return this.productsService.findNewProducts(limit);
   }
 
   @Get(':id')
