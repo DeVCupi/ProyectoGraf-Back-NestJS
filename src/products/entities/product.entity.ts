@@ -1,5 +1,5 @@
-import { Category } from 'src/categories/entities/category.entity';
-import { Subcategory } from 'src/categories/entities/subcategory.entity';
+import { Category } from '../../categories/entities/category.entity';
+import { Subcategory } from '../../categories/entities/subcategory.entity';
 import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, ManyToOne, JoinColumn } from 'typeorm';
 
 @Entity('products')
