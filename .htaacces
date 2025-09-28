@@ -1,0 +1,4 @@
+cd /home4/diagralc/graf.com/backend
+touch .htaccess
+echo "DirectoryIndex disabled" >> .htaccess
+echo "RewriteEngine On" >> .htaccess
