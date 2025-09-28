@@ -11,14 +11,15 @@ import { TypeOrmModule } from '@nestjs/typeorm';
   imports: [
     TypeOrmModule.forRoot({
       type: 'mysql',
-      host: 'localhost',
+      host: '127.0.0.1',
       port: 3306,
-      username: 'root',
-      password: '',
-      database: 'graf_db',
+      username: 'diagralc_graf',
+      password: 'Y@B-;f&C7Kc)45687srty66',
+      database: 'diagralc_graf_db',
       autoLoadEntities: true,
       synchronize: true,
     }),
+    
     ScraperModule, CategoriesModule, ProductsModule, CronModule],
   controllers: [AppController],
   providers: [AppService],
