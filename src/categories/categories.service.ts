@@ -4,7 +4,7 @@ import { Repository } from 'typeorm';
 import { Category } from './entities/category.entity';
 import { Subcategory } from './entities/subcategory.entity';
 import { ScraperService } from '../scraper/scraper.service';
-import { ProductsService } from 'src/products/products.service';
+import { ProductsService } from '../products/products.service';
 
 @Injectable()
 export class CategoriesService {
