@@ -28,6 +28,9 @@ export class Product {
   @Column({ length: 255, nullable: false})
   color: string
 
+  @Column({nullable: false})
+  sold_out: Boolean
+
   @ManyToOne(() => Category, (cat) => cat.id, {eager: true, nullable: false})
   @JoinColumn({ name: 'category_id' })
   category: Category;

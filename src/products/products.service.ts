@@ -38,7 +38,7 @@ export class ProductsService {
   }
 
   async findAll(name?: string): Promise<Product[]> {
-    const params: any = {order: { created_at: 'ASC' }, where: {}};
+    const params: any = {order: { created_at: 'ASC' }, where: { sold_out: false}};
   
     if (name) {
       params.where.name = ILike(`%${name}%`);
@@ -71,7 +71,7 @@ export class ProductsService {
     id: number,
     name?: string,
   ): Promise<Product[]> {
-    const where: any = { [relation]: { id } };
+    const where: any = { [relation]: { id }, sold_out: false };
   
     if (name) {
       where.name = ILike(`%${name}%`);
@@ -99,7 +99,7 @@ export class ProductsService {
   // FIND ONE
   async findOne(id: number): Promise<Product> {
 
-      const product = await this.productRepository.findOne({ where: { id } });
+      const product = await this.productRepository.findOne({ where: { id, sold_out: false }, });
       if (!product) {
         throw new NotFoundException({
           success: false,
@@ -112,7 +112,7 @@ export class ProductsService {
 
 
   async findProductsWithDiscounts(): Promise<Product[]> {
-    const products = await this.productRepository.find({ where: { discount_percentage :  Not(IsNull()) }, order: { created_at: 'DESC' }, take: 8 });
+    const products = await this.productRepository.find({ where: { discount_percentage :  Not(IsNull()), sold_out: false }, order: { created_at: 'DESC' }, take: 8 });
     if (!products) {
       throw new NotFoundException({
         success: false,
@@ -124,7 +124,7 @@ export class ProductsService {
   }
 
   async findNewProducts(limit: number = 12): Promise<Product[]> {
-    const products = await this.productRepository.find({ order: { created_at: 'DESC' }, take: limit });
+    const products = await this.productRepository.find({where: {sold_out: false}, order: { created_at: 'DESC' }, take: limit });
     if (!products) {
       throw new NotFoundException({
         success: false,

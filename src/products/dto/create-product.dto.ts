@@ -1,5 +1,5 @@
 // src/products/dto/create-product.dto.ts
-import { IsNotEmpty, IsOptional, IsString } from 'class-validator';
+import { IsBoolean, IsNotEmpty, IsOptional, IsString } from 'class-validator';
 
 export class CreateProductDto {
   @IsString()
@@ -21,4 +21,7 @@ export class CreateProductDto {
 
   @IsString()
   color: string;
+
+  @IsBoolean()
+  sold_out: Boolean
 }

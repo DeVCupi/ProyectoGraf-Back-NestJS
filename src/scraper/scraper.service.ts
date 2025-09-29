@@ -116,7 +116,7 @@ export class ScraperService {
             console.warn(`Selector .sticky no encontrado para ${p.name} - ${p.link}`);
           }
 
-          const detailProductsAndPrice = await page.evaluate(() => {
+          const dataProduct = await page.evaluate(() => {
             const sticky = document.querySelector('.sticky');
             
             // VALIDACIÓN CRÍTICA: Verificar que sticky existe
@@ -127,6 +127,7 @@ export class ScraperService {
                 price: '',
                 discount_percentage: null,
                 image: '',
+                sold_out: true
               };
             }
 
@@ -147,16 +148,26 @@ export class ScraperService {
             // }
           
             // Extraer precio con validaciones
-            let priceContainer = sticky.querySelector('.price > span.amount > bdi');
-
-            if (!priceContainer) {
-              priceContainer = sticky.querySelector('.price > ins > span.amount > bdi');
+            let priceAllContainers = sticky.querySelectorAll('.price > span.amount > bdi');
+            let priceToSave: string = ""
+            if (priceAllContainers.length == 0) {
+              const priceContainer = sticky.querySelector('.price > ins > span.amount > bdi');
+              if(priceContainer){
+                priceToSave = '$' + priceContainer.textContent.trim().replace('$', '')
+              }
+            }else if(priceAllContainers.length > 0){
+              priceAllContainers.forEach((p, index)=>{
+                priceToSave = priceToSave + ('$' + p.textContent.trim().replace('$', ''))
+                if(index + 1 < priceAllContainers.length){
+                  priceToSave += " - "
+                }
+              })
             }
 
             const oldPrice = sticky.querySelector('.price > span.screen-reader-text')
             let discountPercentage = 0;
-              
-            if (oldPrice && priceContainer) {
+
+            if (oldPrice && !oldPrice.textContent.includes("Rango de precios") && priceToSave !== "") {
               const clean = (txt: string) =>
                 parseFloat(
                   txt
@@ -164,25 +175,33 @@ export class ScraperService {
                     .replace(/\./g, '')       // quita puntos de miles
                     .replace(',', '.')        // convierte coma decimal en punto
                 );
-
               const oldPriceValue = clean(oldPrice.textContent.trim());
-              const newPriceValue = clean(priceContainer.textContent.trim());
-              console.log(oldPriceValue +" "+ newPriceValue)
+              const newPriceValue = clean(priceToSave.split("-")[0].trim());
               discountPercentage = ((oldPriceValue - newPriceValue) / newPriceValue) * 100;
+            }
+
+            let sold_out = true 
+            if(priceToSave !== ""){
+              const price = parseFloat(
+                priceToSave.split("-")[0].trim().replace('$', '')
+              );
+              sold_out = price <= 0;
             }
             
             return { 
               details: detailsDiv ? detailsDiv.innerHTML.trim() : '', 
-              price: priceContainer ? '$' + priceContainer.textContent.trim().replace('$', '') : '',
+              price: priceToSave,
               discount_percentage: discountPercentage > 0 ? `${discountPercentage.toFixed(4)}%` : null,
               image: img?.getAttribute('href') ?? '',
+              sold_out
             };
           });
     
-          p.details = detailProductsAndPrice.details;
-          p.price = detailProductsAndPrice.price;
-          p.discount_percentage = detailProductsAndPrice.discount_percentage
-          p.image = detailProductsAndPrice.image
+          p.details = dataProduct.details;
+          p.price = dataProduct.price;
+          p.discount_percentage = dataProduct.discount_percentage
+          p.image = dataProduct.image
+          p.sold_out = dataProduct.sold_out
           await page.goBack();
         }
       }
